@@ -27,6 +27,27 @@ describe 'TwitterTags' do
       pages(:home).should render(tag).matching(//)
     end
 
+    it 'should pass the search down to the tweet-directive' do
+      tag = %{<r:twitter search='#example'><r:tweets>.</r:tweets></r:twitter>}
+
+      twitter_search_obj = Twitter::Search.new
+      Twitter::Search.should_receive(:new).with('#example').and_return(twitter_search_obj)
+      twitter_search_obj.should_not_receive(:from)
+
+      pages(:home).should render(tag).matching(//)
+    end
+
+
+    it 'should pass the search and user down to the tweet-directive' do
+      tag = %{<r:twitter search='#example' user="openminds_be"><r:tweets>.</r:tweets></r:twitter>}
+
+      twitter_search_obj = Twitter::Search.new
+      Twitter::Search.should_receive(:new).with('#example').and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:from).with('openminds_be').and_return(twitter_search_obj)
+      
+      pages(:home).should render(tag).matching(//)
+    end
+
   end
   
   describe '<r:twitter:tweets>' do    
@@ -132,6 +153,22 @@ describe 'TwitterTags' do
       twitter_search_obj.should_receive(:per_page).with(1).and_return(tweets)      
 
       pages(:home).should render(tag).as(expected)
+      end
+
+    it 'should give the date & time of the tweet with custom format' do
+      tag = %{<r:twitter user='openminds_be'><r:tweets count="1"><r:tweet:date format='%H:%M %b %d' /></r:tweets></r:twitter>}
+      expected = '05:34 Feb 23'
+
+      tweets = [
+        {"text"=>"text 1",  "created_at"=>"Mon, 23 Feb 2009 12:34:56 +0000", "to_user_id"=>nil, "from_user"=>"openminds_be", "id"=>1240985884, "from_user_id"=>1621731, "iso_language_code"=>"nl", "source"=>"&lt;a href=&quot;http://twitter.com/&quot;&gt;web&lt;/a&gt;", "profile_image_url"=>"http://s3.amazonaws.com/twitter_production/profile_images/60061505/logo-vierkant_normal.png"},
+        ]
+
+      twitter_search_obj = Twitter::Search.new
+      Twitter::Search.should_receive(:new).and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:from).with('openminds_be').and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:per_page).with(1).and_return(tweets)
+
+      pages(:home).should render(tag).as(expected)
     end
   end  
   
@@ -151,5 +188,41 @@ describe 'TwitterTags' do
 
       pages(:home).should render(tag).as(expected)
     end
-  end  
+  end
+
+  describe '<r:twitter:tweets:tweet:user>' do
+    it 'should give the url to the tweet' do
+      tag = %{<r:twitter user='openminds_be'><r:tweets count="1"><r:tweet:user /></r:tweets></r:twitter>}
+      expected = 'openminds_be'
+
+      tweets = [
+        {"text"=>"text 1",  "created_at"=>"Mon, 23 Feb 2009 12:34:56 +0000", "to_user_id"=>nil, "from_user"=>"openminds_be", "id"=>1240985884, "from_user_id"=>1621731, "iso_language_code"=>"nl", "source"=>"&lt;a href=&quot;http://twitter.com/&quot;&gt;web&lt;/a&gt;", "profile_image_url"=>"http://s3.amazonaws.com/twitter_production/profile_images/60061505/logo-vierkant_normal.png"},
+        ]
+
+      twitter_search_obj = Twitter::Search.new
+      Twitter::Search.should_receive(:new).and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:from).with('openminds_be').and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:per_page).with(1).and_return(tweets)
+
+      pages(:home).should render(tag).as(expected)
+    end
+  end
+
+  describe '<r:twitter:tweets:tweet:user_url>' do
+    it 'should give the url to the tweet' do
+      tag = %{<r:twitter user='openminds_be'><r:tweets count="1"><r:tweet:user_url /></r:tweets></r:twitter>}
+      expected = 'http://www.twitter.com/openminds_be'
+
+      tweets = [
+        {"text"=>"text 1",  "created_at"=>"Mon, 23 Feb 2009 12:34:56 +0000", "to_user_id"=>nil, "from_user"=>"openminds_be", "id"=>1240985884, "from_user_id"=>1621731, "iso_language_code"=>"nl", "source"=>"&lt;a href=&quot;http://twitter.com/&quot;&gt;web&lt;/a&gt;", "profile_image_url"=>"http://s3.amazonaws.com/twitter_production/profile_images/60061505/logo-vierkant_normal.png"},
+        ]
+
+      twitter_search_obj = Twitter::Search.new
+      Twitter::Search.should_receive(:new).and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:from).with('openminds_be').and_return(twitter_search_obj)
+      twitter_search_obj.should_receive(:per_page).with(1).and_return(tweets)
+
+      pages(:home).should render(tag).as(expected)
+    end
+  end
 end
