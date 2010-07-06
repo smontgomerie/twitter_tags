@@ -19,9 +19,9 @@ module TwitterTags
     order = (tag.attr['order'] || 'desc').downcase
 
     raise StandardError::new('the count attribute should be a positive integer') unless count > 0
-    raise StandardError::new('the order attribute should be "asc" or "desc"') unless %w{ asc desc }.include?(order)
+    raise StandardError::new('the order attribute should be "asc" or "desc"') unless %w{  asc desc  }.include?(order)
 
-    if ( tag.locals.search)
+    if (tag.locals.search)
       twitter = Twitter::Search.new(tag.locals.search)
     else
       twitter = Twitter::Search.new
@@ -34,9 +34,12 @@ module TwitterTags
     # iterate over the tweets
     result = []
 
-    twitter.per_page(count).each do |tweet|
-      tag.locals.tweet = tweet
-      result << tag.expand
+    begin
+      twitter.per_page(count).each do |tweet|
+        tag.locals.tweet = tweet
+        result << tag.expand
+      end
+    rescue
     end
 
     result
@@ -68,7 +71,7 @@ module TwitterTags
     tweet = tag.locals.tweet
 
     "http://www.twitter.com/#{tweet['from_user']}/statuses/#{tweet['id']}"
-    end
+  end
 
   desc "Returns the url from the tweet"
   tag "twitter:tweets:tweet:user" do |tag|
